@@ -105,7 +105,7 @@ CREATE TABLE task_completions (
   task_id      UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
   user_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  date         DATE NOT NULL GENERATED ALWAYS AS (completed_at::DATE) STORED
+  date         DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
 CREATE INDEX idx_task_completions_user_date ON task_completions(user_id, date);

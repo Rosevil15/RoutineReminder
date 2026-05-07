@@ -61,8 +61,20 @@ export function useAuth(): AuthHook {
       throw new Error('Password must be at least 8 characters long.');
     }
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw new Error(error.message);
+
+    // Manually create profile and preferences — more reliable than a DB trigger
+    const userId = data.user?.id;
+    if (userId) {
+      await supabase
+        .from('profiles')
+        .upsert({ id: userId, email }, { onConflict: 'id' });
+
+      await supabase
+        .from('user_preferences')
+        .upsert({ user_id: userId }, { onConflict: 'user_id' });
+    }
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<void> => {
