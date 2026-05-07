@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { resolveConflict } from '../utils/conflictResolution';
-import { localGet, localSet, getDirtyIds, TASKS_KEY, DIRTY_TASKS_KEY } from '../utils/localStore';
+import { localGet, localSet, getDirtyIds, TASKS_KEY, ROUTINES_KEY, HABITS_KEY, DIRTY_TASKS_KEY } from '../utils/localStore';
 import type { Task, Routine, Habit } from '../types';
 
 // ---- State ----
@@ -31,10 +31,17 @@ type TaskAction =
 // ---- Reducer ----
 function taskReducer(state: TaskState, action: TaskAction): TaskState {
   switch (action.type) {
-    case 'SET_TASKS':
-      return { ...state, tasks: action.payload, loading: false };
-    case 'ADD_TASK':
+    case 'SET_TASKS': {
+      // Deduplicate by id — last write wins (preserves ADD_TASK optimistic updates)
+      const seen = new Map<string, Task>();
+      for (const t of action.payload) seen.set(t.id, t);
+      return { ...state, tasks: Array.from(seen.values()), loading: false };
+    }
+    case 'ADD_TASK': {
+      // Only add if not already present (prevents duplicate on re-mount)
+      if (state.tasks.some((t) => t.id === action.payload.id)) return state;
       return { ...state, tasks: [...state.tasks, action.payload] };
+    }
     case 'UPDATE_TASK':
       return {
         ...state,
@@ -58,10 +65,15 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
             : t
         ),
       };
-    case 'SET_ROUTINES':
-      return { ...state, routines: action.payload };
-    case 'ADD_ROUTINE':
+    case 'SET_ROUTINES': {
+      const seen = new Map<string, Routine>();
+      for (const r of action.payload) seen.set(r.id, r);
+      return { ...state, routines: Array.from(seen.values()) };
+    }
+    case 'ADD_ROUTINE': {
+      if (state.routines.some((r) => r.id === action.payload.id)) return state;
       return { ...state, routines: [...state.routines, action.payload] };
+    }
     case 'UPDATE_ROUTINE':
       return {
         ...state,
@@ -112,6 +124,19 @@ export function TaskProvider({ children }: TaskProviderProps) {
     habits: [],
     loading: true,
   });
+
+  // Load all data from local store ONCE on provider mount
+  useEffect(() => {
+    Promise.all([
+      localGet<Task[]>(TASKS_KEY),
+      localGet<Routine[]>(ROUTINES_KEY),
+      localGet<Habit[]>(HABITS_KEY),
+    ]).then(([storedTasks, storedRoutines, storedHabits]) => {
+      dispatch({ type: 'SET_TASKS', payload: (storedTasks ?? []).filter((t) => !t.isDeleted) });
+      dispatch({ type: 'SET_ROUTINES', payload: (storedRoutines ?? []).filter((r) => !r.isDeleted) });
+      dispatch({ type: 'SET_HABITS', payload: (storedHabits ?? []).filter((h) => !h.isDeleted) });
+    });
+  }, []); // runs exactly once
 
   // Supabase Realtime subscription for tasks (Requirement 7.6)
   useEffect(() => {

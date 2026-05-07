@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonItem, IonLabel, IonInput, IonButton, IonText, IonSpinner,
+  IonPage, IonContent, IonInput, IonButton, IonText, IonSpinner, IonIcon,
 } from '@ionic/react';
+import { fingerPrintOutline, mailOutline, lockClosedOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -39,51 +39,124 @@ const LoginPage: React.FC = () => {
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Sign In</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
-        <IonItem>
-          <IonLabel position="stacked">Email</IonLabel>
-          <IonInput
-            type="email"
-            value={email}
-            onIonChange={(e) => setEmail(e.detail.value ?? '')}
-            placeholder="you@example.com"
-          />
-        </IonItem>
-        <IonItem>
-          <IonLabel position="stacked">Password</IonLabel>
-          <IonInput
-            type="password"
-            value={password}
-            onIonChange={(e) => setPassword(e.detail.value ?? '')}
-            placeholder="••••••••"
-          />
-        </IonItem>
+      <IonContent fullscreen>
+        <div style={{
+          minHeight: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '32px 24px',
+          background: 'linear-gradient(160deg, #6366f1 0%, #8b5cf6 100%)',
+        }}>
+          {/* Hero */}
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <div style={{
+              width: 72, height: 72, borderRadius: 20,
+              background: 'rgba(255,255,255,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 16px', fontSize: 36,
+            }}>✅</div>
+            <h1 style={{ color: '#fff', margin: 0, fontSize: 28, fontWeight: 700 }}>TaskReminder</h1>
+            <p style={{ color: 'rgba(255,255,255,0.75)', margin: '6px 0 0', fontSize: 15 }}>
+              Stay on top of your day
+            </p>
+          </div>
 
-        {error && (
-          <IonText color="danger">
-            <p style={{ padding: '0 16px' }}>{error}</p>
-          </IonText>
-        )}
+          {/* Card */}
+          <div style={{
+            background: '#fff',
+            borderRadius: 20,
+            padding: '28px 20px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+          }}>
+            {/* Email */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+                Email
+              </label>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: '#f3f4f6', borderRadius: 12, padding: '4px 14px',
+              }}>
+                <IonIcon icon={mailOutline} style={{ color: '#9ca3af', fontSize: 18 }} />
+                <IonInput
+                  type="email"
+                  value={email}
+                  onIonChange={(e) => setEmail(e.detail.value ?? '')}
+                  placeholder="you@example.com"
+                  style={{ '--padding-start': '0', '--padding-end': '0', fontSize: 15 }}
+                />
+              </div>
+            </div>
 
-        <IonButton expand="block" onClick={handleLogin} disabled={loading} style={{ marginTop: 16 }}>
-          {loading ? <IonSpinner name="crescent" /> : 'Sign In'}
-        </IonButton>
+            {/* Password */}
+            <div style={{ marginBottom: 6 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+                Password
+              </label>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: '#f3f4f6', borderRadius: 12, padding: '4px 14px',
+              }}>
+                <IonIcon icon={lockClosedOutline} style={{ color: '#9ca3af', fontSize: 18 }} />
+                <IonInput
+                  type="password"
+                  value={password}
+                  onIonChange={(e) => setPassword(e.detail.value ?? '')}
+                  placeholder="••••••••"
+                  style={{ '--padding-start': '0', '--padding-end': '0', fontSize: 15 }}
+                />
+              </div>
+            </div>
 
-        <IonButton expand="block" fill="outline" onClick={handleBiometric} style={{ marginTop: 8 }}>
-          Sign In with Biometrics
-        </IonButton>
+            <div style={{ textAlign: 'right', marginBottom: 20 }}>
+              <a
+                onClick={() => history.push('/auth/forgot-password')}
+                style={{ fontSize: 13, color: '#6366f1', cursor: 'pointer', fontWeight: 500 }}
+              >
+                Forgot password?
+              </a>
+            </div>
 
-        <IonButton expand="block" fill="clear" routerLink="/auth/register">
-          Create an account
-        </IonButton>
-        <IonButton expand="block" fill="clear" routerLink="/auth/forgot-password">
-          Forgot password?
-        </IonButton>
+            {error && (
+              <div style={{
+                background: '#fef2f2', border: '1px solid #fecaca',
+                borderRadius: 10, padding: '10px 14px', marginBottom: 14,
+              }}>
+                <IonText color="danger" style={{ fontSize: 13 }}>{error}</IonText>
+              </div>
+            )}
+
+            <IonButton
+              expand="block"
+              onClick={handleLogin}
+              disabled={loading}
+              style={{ '--background': '#6366f1', '--border-radius': '12px', fontWeight: 700, marginBottom: 10 }}
+            >
+              {loading ? <IonSpinner name="crescent" /> : 'Sign In'}
+            </IonButton>
+
+            <IonButton
+              expand="block"
+              fill="outline"
+              onClick={handleBiometric}
+              style={{ '--border-radius': '12px', '--color': '#6366f1', '--border-color': '#6366f1' }}
+            >
+              <IonIcon icon={fingerPrintOutline} slot="start" />
+              Biometric Sign In
+            </IonButton>
+          </div>
+
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.8)', marginTop: 24, fontSize: 14 }}>
+            Don't have an account?{' '}
+            <a
+              onClick={() => history.push('/auth/register')}
+              style={{ color: '#fff', fontWeight: 700, cursor: 'pointer' }}
+            >
+              Sign up
+            </a>
+          </p>
+        </div>
       </IonContent>
     </IonPage>
   );

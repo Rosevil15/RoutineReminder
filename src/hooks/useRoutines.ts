@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useTaskContext } from '../context/TaskContext';
 import { useAuthContext } from '../context/AuthContext';
 import {
@@ -38,25 +38,7 @@ export function useRoutines(): RoutinesHook {
   const { state, dispatch } = useTaskContext();
   const { state: authState } = useAuthContext();
 
-  // Load routines and habits from local store on mount
-  useEffect(() => {
-    Promise.all([
-      localGet<Routine[]>(ROUTINES_KEY),
-      localGet<Habit[]>(HABITS_KEY),
-    ]).then(([storedRoutines, storedHabits]) => {
-      const routines = (storedRoutines ?? []).filter((r) => !r.isDeleted);
-      const habits = (storedHabits ?? []).filter((h) => !h.isDeleted);
-
-      // Attach habits to routines
-      const routinesWithHabits = routines.map((r) => ({
-        ...r,
-        habits: habits.filter((h) => h.routineId === r.id),
-      }));
-
-      dispatch({ type: 'SET_ROUTINES', payload: routinesWithHabits });
-      dispatch({ type: 'SET_HABITS', payload: habits });
-    });
-  }, [dispatch]);
+  // Data is loaded by TaskProvider on mount — no per-hook loading needed
 
   const createRoutine = useCallback(async (dto: CreateRoutineDto): Promise<Routine> => {
     if (!validateTitle(dto.name)) {

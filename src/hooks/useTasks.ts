@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useTaskContext } from '../context/TaskContext';
 import { useAuthContext } from '../context/AuthContext';
 import {
@@ -101,16 +101,7 @@ export function useTasks(filters?: TaskFilter): TasksHook {
   const { state, dispatch } = useTaskContext();
   const { state: authState } = useAuthContext();
 
-  // Load tasks from local store on mount
-  useEffect(() => {
-    localGet<Task[]>(TASKS_KEY).then((stored) => {
-      if (stored) {
-        dispatch({ type: 'SET_TASKS', payload: stored.filter((t) => !t.isDeleted) });
-      } else {
-        dispatch({ type: 'SET_TASKS', payload: [] });
-      }
-    });
-  }, [dispatch]);
+  // Data is loaded by TaskProvider on mount — no per-hook loading needed
 
   const createTask = useCallback(async (dto: CreateTaskDto): Promise<Task> => {
     if (!validateTitle(dto.title)) {
