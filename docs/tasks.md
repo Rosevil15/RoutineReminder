@@ -83,14 +83,14 @@ All package versions are pinned as specified in the design document. React Route
   - Create `supabase/migrations/001_initial_schema.sql` containing the full PostgreSQL schema from the design (profiles, user_preferences, tasks, routines, habits, task_completions, all indexes, RLS policies, and the `update_updated_at` trigger)
   - _Requirements: 8.1, 8.2, 7.3_
 
-- [ ] 6. Implement context providers and reducers
+- [x] 6. Implement context providers and reducers
   - Create `src/context/AuthContext.tsx` with `AuthProvider` and `useAuthContext` hook; state shape: `{ user: User | null; loading: boolean }`; actions: `SET_USER`, `SET_LOADING`
   - Create `src/context/TaskContext.tsx` with `TaskProvider` and `useTaskContext` hook; `useReducer` with actions `SET_TASKS`, `ADD_TASK`, `UPDATE_TASK`, `DELETE_TASK`, `MARK_COMPLETE`
   - Create `src/context/ThemeContext.tsx` with `ThemeProvider` and `useThemeContext` hook; state shape: `{ theme: 'light' | 'dark' | 'system' }`
   - Create `src/context/SyncContext.tsx` with `SyncProvider` and `useSyncContext` hook; state shape: `{ syncStatus: SyncStatus; pendingChanges: number }`
   - _Requirements: 7.1, 10.1_
 
-- [ ] 7. Implement useNetwork hook
+- [x] 7. Implement useNetwork hook
   - Create `src/hooks/useNetwork.ts` returning `{ isOffline: boolean; connectionType: string }`
   - Register a `@capacitor/network` `networkStatusChange` listener in a `useEffect`; initialise state from `Network.getStatus()` on mount
   - `isOffline` must be `true` when `connected === false` or `connectionType === 'none'`
@@ -98,7 +98,7 @@ All package versions are pinned as specified in the design document. React Route
     - **Property 21: Offline indicator reflects network status correctly**
     - **Validates: Requirements 7.5**
 
-- [ ] 8. Implement useTheme hook
+- [x] 8. Implement useTheme hook
   - Create `src/hooks/useTheme.ts` returning `{ theme, setTheme }`
   - On mount, read persisted theme from `@capacitor/preferences`; fall back to `'system'` and detect `window.matchMedia('(prefers-color-scheme: dark)')` on first launch
   - `setTheme` writes to preferences then calls `applyTheme`
@@ -110,7 +110,7 @@ All package versions are pinned as specified in the design document. React Route
     - **Property 26: Theme application is synchronous**
     - **Validates: Requirements 10.2**
 
-- [ ] 9. Implement useAuth hook
+- [x] 9. Implement useAuth hook
   - Create `src/hooks/useAuth.ts` returning `{ user, loading, register, login, loginWithBiometrics, logout, resetPassword }`
   - `register`: validate email format and password length (≥ 8 chars) before calling `supabase.auth.signUp`; throw descriptive errors on validation failure
   - `login`: call `supabase.auth.signInWithPassword`; on success store session token in preferences
@@ -121,7 +121,7 @@ All package versions are pinned as specified in the design document. React Route
     - **Property 23: Logout clears all user data from the local store**
     - **Validates: Requirements 8.7**
 
-- [ ] 10. Implement useNotifications hook
+- [x] 10. Implement useNotifications hook
   - Create `src/hooks/useNotifications.ts` returning `{ scheduleTaskNotification, cancelTaskNotification, scheduleRoutineNotification, cancelRoutineNotification, cancelAll, setGlobalEnabled }`
   - `scheduleTaskNotification`: compute `fireAt = scheduledAt - reminderLeadTime * 60_000`; skip if `fireAt` is in the past or global notifications are disabled; call `LocalNotifications.schedule` with `channelId: 'task-reminders'` and `extra: { taskId }`
   - `cancelTaskNotification`: call `LocalNotifications.cancel` with the derived notification ID
@@ -136,10 +136,10 @@ All package versions are pinned as specified in the design document. React Route
     - **Property 6: Disabled notifications prevent scheduling**
     - **Validates: Requirements 2.8**
 
-- [~] 11. Checkpoint — Ensure all utility and hook unit tests pass
+- [x] 11. Checkpoint — Ensure all utility and hook unit tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 12. Implement useSync hook
+- [x] 12. Implement useSync hook
   - Create `src/hooks/useSync.ts` returning `{ syncNow, syncStatus, pendingChanges }`
   - `syncNow`: read dirty task/routine/habit IDs from local store; upsert each to Supabase; for each record that also exists in Supabase with a different `updatedAt`, call `resolveConflict` and write the winner to both stores; clear dirty flags after successful push; pull any records updated in Supabase since `last_sync`; update `last_sync` timestamp; return `SyncResult`
   - Implement exponential backoff (1s, 2s, 4s, max 30s) for Supabase errors; surface error in `SyncContext` after 3 failures
@@ -147,7 +147,7 @@ All package versions are pinned as specified in the design document. React Route
   - Register `networkStatusChange` and `appStateChange` listeners in `SyncProvider`'s `useEffect` to trigger `syncNow` automatically
   - _Requirements: 7.3, 7.4, 7.6_
 
-- [ ] 13. Implement useTasks hook
+- [x] 13. Implement useTasks hook
   - Create `src/hooks/useTasks.ts` returning `{ tasks, loading, createTask, updateTask, deleteTask, markComplete }`
   - `createTask`: validate non-empty title; generate UUID; write to local store; add to `dirty_tasks`; dispatch `ADD_TASK` to `TaskContext`; call `scheduleTaskNotification`; for recurring tasks, generate instances up to 90 days ahead sharing the same `recurrenceGroupId`
   - `updateTask`: apply changes to local store; add to `dirty_tasks`; dispatch `UPDATE_TASK`; reschedule notification; handle `RecurrenceScope` (`this` / `future` / `all`) for recurring tasks
@@ -173,7 +173,7 @@ All package versions are pinned as specified in the design document. React Route
     - **Property 19: Offline CRUD operations succeed without network**
     - **Validates: Requirements 7.1**
 
-- [ ] 14. Implement useRoutines hook
+- [x] 14. Implement useRoutines hook
   - Create `src/hooks/useRoutines.ts` returning `{ routines, loading, createRoutine, updateRoutine, deleteRoutine, addHabit, markHabitComplete }`
   - `createRoutine`: validate non-empty name; generate UUID; write to local store; add to `dirty_routines`; dispatch to `TaskContext`; call `scheduleRoutineNotification`
   - `updateRoutine`: update local store; add to `dirty_routines`; reschedule notification
@@ -187,7 +187,7 @@ All package versions are pinned as specified in the design document. React Route
     - **Property 8: Habits added to a routine are all retrievable**
     - **Validates: Requirements 3.2**
 
-- [ ] 15. Implement useProgress hook
+- [x] 15. Implement useProgress hook
   - Create `src/hooks/useProgress.ts` returning `{ getDailySummary, streakCount, weeklyChart, recordCompletion }`
   - `getDailySummary(date)`: read completions and tasks from local store; call `computeDailySummary`
   - `streakCount`: call `computeStreak` over all completions and tasks
@@ -195,10 +195,10 @@ All package versions are pinned as specified in the design document. React Route
   - `recordCompletion`: write or remove a `TaskCompletion` record in local store
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [~] 16. Checkpoint — Ensure all hook tests pass
+- [x] 16. Checkpoint — Ensure all hook tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 17. Set up navigation and App shell
+- [x] 17. Set up navigation and App shell
   - Create `src/App.tsx` wrapping the provider tree: `AuthProvider > ThemeProvider > SyncProvider > TaskProvider`
   - Inside `App.tsx`, register the Android notification channel in a `useEffect` on mount: `LocalNotifications.createChannel({ id: 'task-reminders', name: 'Task Reminders', importance: 4, sound: 'default', vibration: true, visibility: 1 })`
   - Define all routes using `IonReactRouter` and `IonRouterOutlet` (React Router v5):
@@ -209,14 +209,14 @@ All package versions are pinned as specified in the design document. React Route
   - Create `src/components/OfflineBanner.tsx` that reads `useNetwork().isOffline` and renders an `IonBanner` or `IonChip` when offline
   - _Requirements: 7.5_
 
-- [ ] 18. Implement AuthPage screens
+- [x] 18. Implement AuthPage screens
   - Create `src/pages/auth/LoginPage.tsx` with email + password fields, login button, link to register, link to forgot-password, and biometric login button (shown only when `biometricEnabled` preference is true)
   - Create `src/pages/auth/RegisterPage.tsx` with email + password fields; inline validation errors for invalid email format and password < 8 chars; calls `useAuth().register`
   - Create `src/pages/auth/ForgotPasswordPage.tsx` with email field; calls `useAuth().resetPassword`; shows success message
   - All auth forms use `IonInput`, `IonButton`, `IonItem`, `IonLabel`, and `IonText` for error display
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.6_
 
-- [ ] 19. Implement HomePage (Dashboard)
+- [x] 19. Implement HomePage (Dashboard)
   - Create `src/pages/HomePage.tsx` showing today's tasks (via `useTasks({ date: today })`) and today's routines (via `useRoutines`)
   - Display `DailySummary` from `useProgress().getDailySummary(today)` — scheduled count, completed count, percentage
   - Show congratulatory `IonAlert` or banner when `percentage === 100` and `scheduled > 0`
@@ -224,7 +224,7 @@ All package versions are pinned as specified in the design document. React Route
   - Show `OfflineBanner` when offline
   - _Requirements: 6.2, 6.6, 7.5_
 
-- [ ] 20. Implement TaskListPage
+- [x] 20. Implement TaskListPage
   - Create `src/pages/TaskListPage.tsx` displaying all tasks from `useTasks()`
   - Add filter controls (priority multi-select, category multi-select) using `IonSelect` or `IonChip` toggles; wire to `filterByPriority` and `filterByCategory`
   - Add sort-by-priority toggle wired to `sortByPriority`
@@ -233,7 +233,7 @@ All package versions are pinned as specified in the design document. React Route
   - FAB button navigates to `/task-detail/new`
   - _Requirements: 5.2, 5.3, 5.5, 9.3, 9.4, 9.5_
 
-- [ ] 21. Implement TaskDetailPage
+- [x] 21. Implement TaskDetailPage
   - Create `src/pages/TaskDetailPage.tsx` for both create (`/task-detail/new`) and edit (`/task-detail/:id`) modes
   - Form fields: title (`IonInput`), date/time (`IonDatetime`), priority (`IonSelect`), category (`IonSelect`), recurrence type (`IonSelect`), recurrence days (day-of-week checkboxes, shown only for `selected_days`), reminder lead time (`IonSelect` with options 5/10/15/30/60)
   - Inline validation: prevent save if title is empty or whitespace-only; show `IonText` error
@@ -242,7 +242,7 @@ All package versions are pinned as specified in the design document. React Route
   - Delete button (edit mode only) calls `useTasks().deleteTask` with same recurrence scope prompt
   - _Requirements: 1.1, 1.5, 1.7, 1.8, 5.4, 9.6_
 
-- [ ] 22. Implement RoutinePlannerPage and RoutineDetailPage
+- [x] 22. Implement RoutinePlannerPage and RoutineDetailPage
   - Create `src/pages/RoutinePlannerPage.tsx` displaying routines grouped by time block (morning → afternoon → evening) using `groupByTimeBlock`; each group is an `IonList` section
   - Each routine row shows name, time block, recurrence, and a habit completion checklist
   - Habit checkboxes call `useRoutines().markHabitComplete`
@@ -252,7 +252,7 @@ All package versions are pinned as specified in the design document. React Route
   - Add/remove habits inline (each habit is an `IonInput` row with a delete button)
   - _Requirements: 3.1, 3.2, 3.3, 3.5, 3.7_
 
-- [ ] 23. Implement CalendarPage
+- [x] 23. Implement CalendarPage
   - Create `src/pages/CalendarPage.tsx` with a monthly grid view and a weekly timeline view, toggled by a segment control
   - Monthly grid: render a 7-column grid of day cells; highlight dates that have tasks or routines; color-code task dots by priority (red/orange/green)
   - Tapping a date calls `filterByDate` and displays the day's items in a list below the grid
@@ -261,7 +261,7 @@ All package versions are pinned as specified in the design document. React Route
   - Month navigation (prev/next arrows) loads data within 500ms using local store reads (no network call required)
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
 
-- [ ] 24. Implement ProgressPage
+- [x] 24. Implement ProgressPage
   - Create `src/pages/ProgressPage.tsx` displaying:
     - Today's `DailySummary` (scheduled / completed / percentage) from `useProgress`
     - Streak count badge from `useProgress().streakCount`
@@ -269,7 +269,7 @@ All package versions are pinned as specified in the design document. React Route
     - Congratulatory message when all tasks for today are complete
   - _Requirements: 6.2, 6.3, 6.4, 6.6_
 
-- [ ] 25. Implement SettingsPage
+- [x] 25. Implement SettingsPage
   - Create `src/pages/SettingsPage.tsx` with:
     - Theme selector (`IonSegment` with Light / Dark / System options) wired to `useTheme().setTheme`
     - Notifications toggle (`IonToggle`) wired to `useNotifications().setGlobalEnabled`
@@ -278,17 +278,17 @@ All package versions are pinned as specified in the design document. React Route
     - Logout button calling `useAuth().logout` then redirecting to `/auth/login`
   - _Requirements: 2.7, 8.7, 8.8, 10.1, 10.2, 10.3, 10.4, 10.5_
 
-- [ ] 26. Wire dark mode into the app shell
+- [x] 26. Wire dark mode into the app shell
   - In `ThemeProvider`, call `applyTheme` on mount (reading persisted preference) and whenever `theme` state changes
   - Add `window.matchMedia` listener for `prefers-color-scheme` changes to re-apply when `theme === 'system'`
   - Ensure `document.body.classList` toggle happens synchronously (no `setTimeout` or async operations)
   - _Requirements: 10.2, 10.3, 10.5_
 
-- [~] 27. Checkpoint — Ensure all page rendering tests pass
+- [x] 27. Checkpoint — Ensure all page rendering tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 28. Write page-level unit and integration tests
-  - [ ] 28.1 Write unit tests for TaskDetailPage
+  - [x] 28.1 Write unit tests for TaskDetailPage
     - Test that saving with empty title shows validation error and does not call `createTask`
     - Test that saving with whitespace-only title shows validation error
     - Test that recurrence scope action sheet appears on edit of recurring task
@@ -306,20 +306,20 @@ All package versions are pinned as specified in the design document. React Route
     - Test that theme segment calls `setTheme`
     - _Requirements: 2.7, 10.1_
 
-- [ ] 29. Implement Supabase Realtime subscription
+- [x] 29. Implement Supabase Realtime subscription
   - Inside `TaskProvider`'s `useEffect`, subscribe to `supabase.channel('tasks').on('postgres_changes', ...)` for INSERT/UPDATE/DELETE events on the `tasks` table filtered by `user_id`
   - On receiving a remote change, call `resolveConflict` if the record is also dirty locally; dispatch the winning version to `TaskContext`
   - Unsubscribe on provider unmount
   - _Requirements: 7.6_
 
-- [ ] 30. Final integration wiring and smoke tests
-  - [~] 30.1 Verify notification tap navigation
+- [x] 30. Final integration wiring and smoke tests
+  - [x] 30.1 Verify notification tap navigation
     - Confirm `localNotificationActionPerformed` listener in `useNotifications` correctly calls `history.push('/task-detail/:id')` using a mock listener
     - _Requirements: 2.5_
-  - [~] 30.2 Verify sync triggers on network reconnect
+  - [x] 30.2 Verify sync triggers on network reconnect
     - Write an integration test that fires a mock `networkStatusChange` event with `connected: true` and asserts `syncNow` is called
     - _Requirements: 7.3_
-  - [ ] 30.3 Verify notification channel registration on app init
+  - [x] 30.3 Verify notification channel registration on app init
     - Write a smoke test asserting `LocalNotifications.createChannel` is called with `id: 'task-reminders'` during `App.tsx` mount
     - _Requirements: 2.4_
   - [ ]* 30.4 Write integration test for Supabase auth registration flow
@@ -329,7 +329,7 @@ All package versions are pinned as specified in the design document. React Route
     - Test that successful `login` calls `syncNow` to pull cloud data
     - _Requirements: 8.5_
 
-- [ ] 31. Final checkpoint — Ensure all tests pass
+- [x] 31. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

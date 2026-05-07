@@ -1,5 +1,9 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { Preferences } from '@capacitor/preferences';
+import { applyTheme } from '../hooks/useTheme';
 import type { Theme } from '../types';
+
+const THEME_KEY = 'app_theme';
 
 // ---- State ----
 interface ThemeState {
@@ -36,6 +40,29 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [state, dispatch] = useReducer(themeReducer, {
     theme: 'system',
   });
+
+  // Load persisted theme on mount and apply it synchronously
+  useEffect(() => {
+    Preferences.get({ key: THEME_KEY }).then(({ value }) => {
+      const saved = (value as Theme) || 'system';
+      dispatch({ type: 'SET_THEME', payload: saved });
+      applyTheme(saved);
+    });
+
+    // Listen for system theme changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      // Re-read current theme from state ref and re-apply if system
+      applyTheme('system');
+    };
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Re-apply theme whenever it changes
+  useEffect(() => {
+    applyTheme(state.theme);
+  }, [state.theme]);
 
   return (
     <ThemeContext.Provider value={{ state, dispatch }}>

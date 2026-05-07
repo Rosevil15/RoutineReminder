@@ -1,4 +1,7 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { resolveConflict } from '../utils/conflictResolution';
+import { localGet, localSet, getDirtyIds, TASKS_KEY, DIRTY_TASKS_KEY } from '../utils/localStore';
 import type { Task, Routine, Habit } from '../types';
 
 // ---- State ----
@@ -109,6 +112,58 @@ export function TaskProvider({ children }: TaskProviderProps) {
     habits: [],
     loading: true,
   });
+
+  // Supabase Realtime subscription for tasks (Requirement 7.6)
+  useEffect(() => {
+    const channel = supabase
+      .channel('tasks-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks' },
+        async (payload) => {
+          const remoteRaw = payload.new as Record<string, unknown> | undefined;
+          if (!remoteRaw) return;
+
+          // Convert snake_case → camelCase
+          const remote: Task = Object.fromEntries(
+            Object.entries(remoteRaw).map(([k, v]) => [
+              k.replace(/_([a-z])/g, (_, l: string) => l.toUpperCase()),
+              v,
+            ])
+          ) as unknown as Task;
+
+          // Check if this record is dirty locally
+          const dirtyIds = await getDirtyIds(DIRTY_TASKS_KEY);
+          const allLocal = (await localGet<Task[]>(TASKS_KEY)) ?? [];
+          const localRecord = allLocal.find((t) => t.id === remote.id);
+
+          let winner = remote;
+          if (localRecord && dirtyIds.includes(remote.id)) {
+            winner = resolveConflict(localRecord, remote);
+          }
+
+          // Update local store
+          const updated = localRecord
+            ? allLocal.map((t) => (t.id === winner.id ? winner : t))
+            : [...allLocal, winner];
+          await localSet(TASKS_KEY, updated);
+
+          // Dispatch to context
+          if (payload.eventType === 'DELETE' || winner.isDeleted) {
+            dispatch({ type: 'DELETE_TASK', payload: winner.id });
+          } else if (localRecord) {
+            dispatch({ type: 'UPDATE_TASK', payload: winner });
+          } else {
+            dispatch({ type: 'ADD_TASK', payload: winner });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel).catch(() => {/* ignore */});
+    };
+  }, []);
 
   return (
     <TaskContext.Provider value={{ state, dispatch }}>
