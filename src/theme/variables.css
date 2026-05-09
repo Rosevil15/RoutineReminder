@@ -149,3 +149,39 @@ ion-button[expand="block"] {
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+/* ============================================================
+   IonDatetime dark mode fix
+   ============================================================ */
+body.dark ion-datetime {
+  --background: #1e293b;
+  --background-rgb: 30, 41, 59;
+  color: #f1f5f9;
+}
+
+body.dark ion-datetime::part(month-year-button) {
+  color: #f1f5f9;
+}
+
+body.dark ion-datetime::part(calendar-day) {
+  color: #f1f5f9;
+}
+
+body.dark ion-datetime::part(time-button) {
+  color: #f1f5f9;
+}
+
+/* IonInput dark mode — ensure typed text is always visible */
+body.dark ion-input {
+  --color: #f1f5f9;
+  --placeholder-color: #64748b;
+}
+
+body.dark ion-item ion-input {
+  --color: #f1f5f9;
+}
+
+/* IonSelect dark mode */
+body.dark ion-select {
+  color: #f1f5f9;
+}

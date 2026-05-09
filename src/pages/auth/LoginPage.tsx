@@ -5,10 +5,18 @@ import {
 import { fingerPrintOutline, mailOutline, lockClosedOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
 
 const LoginPage: React.FC = () => {
   const history = useHistory();
   const { login, loginWithBiometrics } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const cardBg = isDark ? '#1e293b' : '#ffffff';
+  const labelColor = isDark ? '#cbd5e1' : '#374151';
+  const inputBg = isDark ? '#0f172a' : '#f3f4f6';
+  const inputColor = isDark ? '#f1f5f9' : '#111827';
+  const iconColor = isDark ? '#64748b' : '#9ca3af';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -64,47 +72,47 @@ const LoginPage: React.FC = () => {
 
           {/* Card */}
           <div style={{
-            background: '#fff',
+            background: cardBg,
             borderRadius: 20,
             padding: '28px 20px',
             boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
           }}>
             {/* Email */}
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: labelColor, display: 'block', marginBottom: 6 }}>
                 Email
               </label>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                background: '#f3f4f6', borderRadius: 12, padding: '4px 14px',
+                background: inputBg, borderRadius: 12, padding: '4px 14px',
               }}>
-                <IonIcon icon={mailOutline} style={{ color: '#9ca3af', fontSize: 18 }} />
+                <IonIcon icon={mailOutline} style={{ color: iconColor, fontSize: 18 }} />
                 <IonInput
                   type="email"
                   value={email}
                   onIonChange={(e) => setEmail(e.detail.value ?? '')}
                   placeholder="you@example.com"
-                  style={{ '--padding-start': '0', '--padding-end': '0', fontSize: 15 }}
+                  style={{ '--padding-start': '0', '--padding-end': '0', fontSize: 15, '--color': inputColor, '--placeholder-color': iconColor }}
                 />
               </div>
             </div>
 
             {/* Password */}
             <div style={{ marginBottom: 6 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: labelColor, display: 'block', marginBottom: 6 }}>
                 Password
               </label>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                background: '#f3f4f6', borderRadius: 12, padding: '4px 14px',
+                background: inputBg, borderRadius: 12, padding: '4px 14px',
               }}>
-                <IonIcon icon={lockClosedOutline} style={{ color: '#9ca3af', fontSize: 18 }} />
+                <IonIcon icon={lockClosedOutline} style={{ color: iconColor, fontSize: 18 }} />
                 <IonInput
                   type="password"
                   value={password}
                   onIonChange={(e) => setPassword(e.detail.value ?? '')}
                   placeholder="••••••••"
-                  style={{ '--padding-start': '0', '--padding-end': '0', fontSize: 15 }}
+                  style={{ '--padding-start': '0', '--padding-end': '0', fontSize: 15, '--color': inputColor, '--placeholder-color': iconColor }}
                 />
               </div>
             </div>
