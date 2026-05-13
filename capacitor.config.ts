@@ -6,9 +6,10 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   plugins: {
     LocalNotifications: {
-      smallIcon: 'ic_stat_icon_config_sample',
-      iconColor: '#488AFF',
-      sound: 'beep.wav',
+      // Use the default Android notification icon — avoids silent failures
+      // from missing drawable resources
+      smallIcon: 'ic_launcher_foreground',
+      iconColor: '#6366f1',
     },
   },
 };
